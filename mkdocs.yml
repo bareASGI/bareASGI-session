@@ -1,8 +1,8 @@
 site_name: bareASGI-session
 site_description: Session support for bareASGI
 
-repo_name: rob-blackbourn/bareASGI-session
-repo_url: https://github.com/rob-blackbourn/bareASGI-session
+repo_name: bareASGI/bareASGI-session
+repo_url: https://github.com/bareASGI/bareASGI-session
 edit_uri: ""
 
 theme:

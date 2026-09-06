@@ -2,7 +2,7 @@
 
 import asyncio
 from datetime import datetime
-from typing import List, Tuple
+from typing import NotRequired, TypedDict
 
 from bareasgi import Application, text_writer, HttpRequest, HttpResponse
 from hypercorn.asyncio import serve
@@ -14,6 +14,8 @@ from bareasgi_session import (
     MemorySessionStorage
 )
 
+class SessionData(TypedDict):
+    now: NotRequired[datetime]
 
 async def index_handler(_request: HttpRequest) -> HttpResponse:
     """Redirect to the session handler"""
@@ -21,11 +23,11 @@ async def index_handler(_request: HttpRequest) -> HttpResponse:
 
 
 async def session_handler(request: HttpRequest) -> HttpResponse:
-    session = session_data(request)
+    session = session_data(request, SessionData)
     now = session.get('now')
     message = f'The time was {now}' if now else 'First time'
     session['now'] = datetime.now()
-    headers: List[Tuple[bytes, bytes]] = [
+    headers: list[tuple[bytes, bytes]] = [
         (b'content-type', b'text/plain'),
         (b'content-length', str(len(message)).encode('ascii'))
     ]

@@ -2,7 +2,6 @@
 
 from datetime import datetime, timedelta
 import secrets
-from typing import List, Optional, Tuple, Union
 
 from bareasgi import HttpRequest, HttpResponse, HttpRequestCallback
 from bareutils.cookies import decode_set_cookie, encode_set_cookie
@@ -11,21 +10,21 @@ from bareutils import header
 from .storage import SessionStorage
 
 
-class SessionMiddleware:
+class SessionMiddleware[T]:
     """Session middleware"""
 
     def __init__(
             self,
             context_key: str,
-            storage: SessionStorage,
+            storage: SessionStorage[T],
             cookie_name: bytes,
-            expires: Optional[datetime],
-            max_age: Optional[Union[int, timedelta]],
-            path: Optional[bytes],
-            domain: Optional[bytes],
+            expires: datetime | None,
+            max_age: int | timedelta | None,
+            path: bytes | None,
+            domain: bytes | None,
             secure: bool,
             http_only: bool,
-            same_site: Optional[bytes]
+            same_site: bytes | None
     ) -> None:
         self.context_key = context_key
         self.storage = storage
@@ -83,7 +82,7 @@ class SessionMiddleware:
 
         return response
 
-    def _get_session_key_from_cookie(self, request: HttpRequest) -> Optional[str]:
+    def _get_session_key_from_cookie(self, request: HttpRequest) -> str | None:
         cookies = header.cookie(request.scope['headers'])
         session_cookie = cookies.get(self.cookie_name)
         if not session_cookie:
@@ -124,9 +123,9 @@ class SessionMiddleware:
             self,
             request: HttpRequest,
             session_key: str
-    ) -> Tuple[bytes, bytes]:
+    ) -> tuple[bytes, bytes]:
         if self.domain:
-            domain: Optional[bytes] = self.domain
+            domain: bytes | None = self.domain
         else:
             domain = self._get_domain(request)
 
@@ -143,7 +142,7 @@ class SessionMiddleware:
         )
         return (b'set-cookie', set_cookie)
 
-    def _get_domain(self, request: HttpRequest) -> Optional[bytes]:
+    def _get_domain(self, request: HttpRequest) -> bytes | None:
         domain = header.find_exact(header.HOST, request.scope['headers'])
         if domain == b'localhost' or domain.startswith(b'localhost:'):
             # For localhost the domain must be omitted.
@@ -153,9 +152,9 @@ class SessionMiddleware:
 
     def _add_set_cookie_header(
             self,
-            headers: List[Tuple[bytes, bytes]],
-            set_cookie_header: Tuple[bytes, bytes]
-    ) -> List[Tuple[bytes, bytes]]:
+            headers: list[tuple[bytes, bytes]],
+            set_cookie_header: tuple[bytes, bytes]
+    ) -> list[tuple[bytes, bytes]]:
         for index, (key, value) in enumerate(headers):
             if key == header.SET_COOKIE:
                 candidate = decode_set_cookie(value)
