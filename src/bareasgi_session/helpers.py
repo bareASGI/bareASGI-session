@@ -1,29 +1,29 @@
 """Session"""
 
 from datetime import datetime, timedelta
-from typing import Any, Optional, Union
+from typing import cast
 
 from bareasgi import Application, HttpRequest
 
 from .middleware import SessionMiddleware
-from .storage import SessionStorage, MemorySessionStorage
+from .storage import SessionStorage
 
 SESSION_CONTEXT_KEY = '__bareasgi_session__'
 
 
-def add_session_middleware(
+def add_session_middleware[T](
         app: Application,
-        storage: Optional[SessionStorage] = None,
+        storage: SessionStorage[T],
         *,
         context_key: str = SESSION_CONTEXT_KEY,
         cookie_name: bytes = b'bareASGI-session',
-        expires: Optional[datetime] = None,
-        max_age: Optional[Union[int, timedelta]] = None,
-        path: Optional[bytes] = None,
-        domain: Optional[bytes] = None,
+        expires: datetime | None = None,
+        max_age: int | timedelta | None = None,
+        path: bytes | None = None,
+        domain: bytes | None = None,
         secure: bool = False,
         http_only: bool = False,
-        same_site: Optional[bytes] = None
+        same_site: bytes | None = None
 ) -> Application:
     """Add session storage middleware.
 
@@ -41,32 +41,32 @@ def add_session_middleware(
 
     Args:
         app (Application): The ASGI application.
-        storage (Optional[SessionStorage], optional): The storage provider.
+        storage (SessionStorage[T] | None, optional): The storage provider.
             Defaults to None.
         context_key (str, optional): The key in the applications context where session
             data can be found. Defaults to SESSION_CONTEXT_KEY.
         cookie_name (bytes, optional): The cookie name. Defaults to b'bareASGI-session'.
-        expires (Optional[datetime], optional): The cookie expiry time. Defaults
+        expires (datetime | None, optional): The cookie expiry time. Defaults
             to None.
-        max_age (Optional[Union[int, timedelta]], optional): The maximum age of
+        max_age (int | timedelta | None, optional): The maximum age of
             the cookie. Defaults to None.
-        path (Optional[bytes], optional): The cookie path. Defaults to None.
-        domain (Optional[bytes], optional): The cookie domain. If unspecified
+        path (bytes | None, optional): The cookie path. Defaults to None.
+        domain (bytes | None, optional): The cookie domain. If unspecified
             the host header of the request will be used. Defaults to None.
         secure (bool, optional): The cookie is only sent if the request is
             using https Defaults to False.
         http_only (bool, optional): If true the cookie is not available with
             javascript in the client. Defaults to False.
-        same_site (Optional[bytes], optional): Controls whether the cookie is
+        same_site (bytes | None, optional): Controls whether the cookie is
             sent cross origin. Defaults to None.
 
     Returns:
         Application: The ASGI application.
     """
 
-    session_middleware = SessionMiddleware(
+    session_middleware = SessionMiddleware[T](
         context_key,
-        storage or MemorySessionStorage(),
+        storage,
         cookie_name,
         expires,
         max_age,
@@ -82,9 +82,10 @@ def add_session_middleware(
     return app
 
 
-def session_data(
+def session_data[T](
         request: HttpRequest,
+        _type: type[T] | None = None,
         *,
         context_key: str = SESSION_CONTEXT_KEY
-) -> Any:
-    return request.context[context_key]
+) -> T:
+    return cast(T, request.context[context_key])

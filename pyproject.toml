@@ -1,35 +1,90 @@
-[tool.poetry]
+[project]
 name = "bareASGI-session"
-version = "4.0.1"
+version = "5.0.0"
 description = "Session support for bareASGI"
-repository = "https://github.com/rob-blackbourn/bareASGI-session"
-authors = ["Rob Blackbourn <rob.blackbourn@gmail.com>"]
-keywords = ['bareASGI', 'session']
-license = "Apache-2.0"
+authors = [
+    { name = "Rob Blackbourn", email = "rob.blackbourn@gmail.com" }
+]
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Internet :: WWW/HTTP",
+]
 readme = "README.md"
-packages = [
-  { include = "bareasgi_session" }
+dependencies = [
+    "bareASGI>=5.0.0,<6"
+]
+license = "Apache-2.0"
+license-files = [
+    "LICENSE"
+]
+keywords = [
+    "bareasgi",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-bareasgi = "^4.0.0"
+[project.optional-dependencies]
+dev = [
+    "autopep8",
+    "coverage",
+    "mypy",
+    "pytest",
+    "pytest-asyncio",
+    "pylint",
+    "types-setuptools",
+]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "jetblack-markdown",
+    "mike",
+]
+examples = [
+    "hypercorn",
+    "uvicorn"
+]
 
-[tool.poetry.dev-dependencies]
-autopep8 = "^1.5"
-hypercorn = "^0.11"
-mypy = "^0.910"
-pylint = "^2.4"
-pytest = "^5.3"
-pytest-asyncio = "^0.10.0"
-pytest-runner = "^5.2"
-uvicorn = "^0.15"
-rope = "^0.16.0"
-mkdocs = "^1.2"
-mkdocs-material = "^7.2"
-jetblack-markdown = "^0.6"
-mike = "^1.1.1"
+[project.urls]
+Homepage = "https://bareASGI.github.io/bareASGI-session"
+Repository = "https://github.com/bareASGI/bareASGI-session"
+Issues = "https://github.com/bareASGI/bareASGI-session/issues"
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+# pylint
+[tool.pylint.main]
+py-version = "3.12"
+jobs = 4
+
+[tool.pylint.basic]
+good-names = ["i", "j", "k", "ex", "Run", "_"]
+bad-names = ["foo", "bar", "baz", "toto", "tutu", "tata"]
+
+[tool.pylint."messages control"]
+disable = [
+    "missing-module-docstring",
+]
+
+# pytest
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "function"
+
+# mypy
+[tool.mypy]
+files = [ "src", "tests", "examples" ]
+
+[[tool.mypy.overrides]]
+module = "pytest"
+ignore_missing_imports = true
